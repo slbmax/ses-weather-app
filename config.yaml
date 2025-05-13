@@ -1,0 +1,9 @@
+log:
+  level: debug
+  disable_sentry: true
+
+weather_api:
+  api_key: YOUR_API_KEY
+
+listener:
+  addr: :8090

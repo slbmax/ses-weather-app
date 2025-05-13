@@ -1,8 +1,13 @@
 package weatherapi
 
+type WeatherCondition struct {
+	Text string `json:"text"`
+}
+
 type CurrentWeather struct {
-	Temperature float64 `json:"temp_c"`
-	Humidity    int8    `json:"humidity"`
+	Temperature float32          `json:"temp_c"`
+	Humidity    uint8            `json:"humidity"`
+	Condition   WeatherCondition `json:"condition"`
 }
 
 type WeatherCurrentResponse struct {
