@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -34,25 +35,12 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 		sub := database.Subscription{
 			Email:     request.Email,
 			City:      request.City,
+			Token:     GenerateToken(),
 			Frequency: request.Frequency,
 			CreatedAt: time.Now(),
 		}
 		if sub.Id, err = db.SubscriptionsQ().Insert(sub); err != nil {
-			return err
-		}
-
-		confirmationToken := database.Token{
-			IsConfirmation: true,
-			Token:          GenerateToken(),
-			SubscriptionId: sub.Id,
-		}
-		unsubToken := database.Token{
-			IsConfirmation: false,
-			Token:          GenerateToken(),
-			SubscriptionId: sub.Id,
-		}
-		if err = db.TokensQ().Insert(confirmationToken, unsubToken); err != nil {
-			return err
+			return fmt.Errorf("failed to insert subscription: %w", err)
 		}
 
 		// TODO: send confirmation email
@@ -66,7 +54,7 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 	case errors.Is(txErr, database.ErrSubscriptionExists):
 		w.WriteHeader(http.StatusConflict)
 	default:
-		logger.WithError(txErr).Error("failed to insert subscription")
+		logger.WithError(txErr).Error("failed to execute transaction")
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

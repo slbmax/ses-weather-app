@@ -11,8 +11,8 @@ import (
 	"gitlab.com/distributed_lab/ape"
 )
 
-func GetWeather(w http.ResponseWriter, r *http.Request) {
-	request, err := requests.NewGetWeatherRequest(r)
+func Weather(w http.ResponseWriter, r *http.Request) {
+	request, err := requests.NewWeatherRequest(r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

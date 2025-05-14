@@ -21,10 +21,6 @@ func (d *db) SubscriptionsQ() database.SubscriptionsQ {
 	return NewSubscriptionsQ(d.db)
 }
 
-func (d *db) TokensQ() database.TokensQ {
-	return NewTokensQ(d.db)
-}
-
 func (d *db) Transaction(fn func() error) error {
 	return d.db.Transaction(fn)
 }

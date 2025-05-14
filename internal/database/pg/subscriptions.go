@@ -1,6 +1,9 @@
 package pg
 
 import (
+	"database/sql"
+	"errors"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
 	"github.com/slbmax/ses-weather-app/internal/database"
@@ -9,6 +12,10 @@ import (
 
 const (
 	subscriptionsTable = "subscriptions"
+
+	columnId        = "id"
+	columnConfirmed = "confirmed"
+	columnToken     = "token"
 
 	constraintUniqueEmail = "unique_email"
 )
@@ -39,4 +46,56 @@ func (s *subscriptionsQ) Insert(subscription database.Subscription) (id int64, e
 	}
 
 	return
+}
+
+func (s *subscriptionsQ) GetByToken(token string) (subscription *database.Subscription, err error) {
+	stmt := squirrel.
+		Select("*").
+		From(subscriptionsTable).
+		Where(squirrel.Eq{columnToken: token})
+
+	err = s.db.Get(&subscription, stmt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+
+	return
+}
+
+func (s *subscriptionsQ) UpdateConfirmed(id int64, unsubscribeToken string) error {
+	stmt := squirrel.
+		Update(subscriptionsTable).
+		Set(columnConfirmed, true).
+		Set(columnToken, unsubscribeToken).
+		Where(squirrel.Eq{
+			columnId:        id,
+			columnConfirmed: false, // generally can be omitted, but still
+		}).Suffix("RETURNING *")
+
+	// actually, the "WITH rows as (UPDATE ... RETURNING *) SELECT COUNT(*) FROM rows" allows us
+	// to bypass the forbidden aggregated functions in the "RETURNING" clause, but for simplicity
+	// we just use the "RETURNING *" clause and check the length of the result
+
+	var affectedRows []database.Subscription
+	if err := s.db.Select(&affectedRows, stmt); err != nil {
+		return err
+	} else if len(affectedRows) == 0 {
+		return database.ErrNoRowsAffected
+	}
+
+	return nil
+}
+
+func (s *subscriptionsQ) DeleteByToken(token string) error {
+	stmt := squirrel.
+		Delete(subscriptionsTable).
+		Where(squirrel.Eq{columnToken: token})
+
+	if result, err := s.db.ExecWithResult(stmt); err != nil {
+		return err
+	} else if rowsAffected, _ := result.RowsAffected(); rowsAffected == 0 {
+		return database.ErrNoRowsAffected
+	} else {
+		return nil
+	}
 }

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/handlers"
+	"github.com/slbmax/ses-weather-app/internal/api/requests"
 	"github.com/slbmax/ses-weather-app/internal/database"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"gitlab.com/distributed_lab/ape"
@@ -81,8 +83,10 @@ func (s *Server) requestHandler() chi.Router {
 	)
 
 	r.Route("/api", func(r chi.Router) {
-		r.Get("/weather", handlers.GetWeather)
+		r.Get("/weather", handlers.Weather)
 		r.Post("/subscribe", handlers.Subscribe)
+		r.Get(fmt.Sprintf("/confirm/{%s}", requests.TokenParam), handlers.Confirm)
+		r.Get(fmt.Sprintf("/unsubscribe/{%s}", requests.TokenParam), handlers.Unsubscribe)
 	})
 
 	return r
