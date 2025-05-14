@@ -7,6 +7,7 @@ import (
 
 	"github.com/slbmax/ses-weather-app/internal/api"
 	"github.com/slbmax/ses-weather-app/internal/config"
+	"github.com/slbmax/ses-weather-app/internal/db/pg"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"github.com/spf13/cobra"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -25,7 +26,12 @@ var runCmd = &cobra.Command{
 
 		weatherApi := weatherapi.NewClient(cfg.WeatherAPIConfig().APIKey)
 		logger := cfg.Log()
-		server := api.NewServer(cfg.Listener(), weatherApi, logger.WithField("component", "api"))
+		server := api.NewServer(
+			cfg.Listener(),
+			weatherApi,
+			pg.NewSubscriptionsQ(cfg.DB()),
+			logger.WithField("component", "api"),
+		)
 
 		eg.Go(func() error {
 			return server.Run(ctx)

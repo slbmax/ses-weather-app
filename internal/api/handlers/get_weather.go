@@ -29,6 +29,7 @@ func GetWeather(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
 			log.WithError(err).Error("failed to get weather data")
+			// believe this is not an API contract violation
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 

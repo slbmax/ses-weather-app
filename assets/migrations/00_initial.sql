@@ -1,31 +1,26 @@
 -- +migrate Up
 
+-- simplifying to use one table for confirmed and unconfirmed subscriptions
 CREATE TABLE IF NOT EXISTS subscriptions (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    city VARCHAR(255) NOT NULL,
+    id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(320) NOT NULL, -- RFC 5321 and RFC 5322
+    city VARCHAR(100) NOT NULL,
     -- can be bad in some cases, but for now it is strictly defined
-    frequency VARCHAR(10) NOT NULL CHECK (frequency IN ('daily', 'hourly')),
+    frequency VARCHAR(6) NOT NULL CHECK (frequency IN ('daily', 'hourly')),
+
+    -- as there isn't any confirmation email resending defined by the spec,
+    -- we can simplify the process by using a token without expiration
+    -- and reuse it for the unsubscribing process. Also, using
+    -- uuid for the token to avoid collisions
+    token VARCHAR(36) NOT NULL,
     confirmed BOOLEAN DEFAULT FALSE,
-    unsubscribe_token VARCHAR(64) NOT NULL,
+
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_notified_at TIMESTAMP WITH TIME ZONE,
+
+    CONSTRAINT unique_email UNIQUE (email)
 );
-
-CREATE TABLE IF NOT EXISTS confirmation_tokens (
-    token VARCHAR(64) PRIMARY KEY,
-    subscription_id INTEGER NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-
-    FOREIGN KEY (subscription_id) REFERENCES subscriptions(id) ON DELETE CASCADE
-);
-
--- Here some useful triggers can be added. But, for this task, it will be better to manually
--- execute required actions (like token removal). It would be much easier to read and understand
--- the written code without keeping the triggers in mind (and thinking some logic is simply missed)
 
 -- +migrate Down
 
-DROP TABLE IF EXISTS confirmation_tokens;
 DROP TABLE IF EXISTS subscriptions;

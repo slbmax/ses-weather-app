@@ -8,28 +8,33 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/handlers"
+	"github.com/slbmax/ses-weather-app/internal/db"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type Server struct {
-	logger     *logan.Entry
-	listener   net.Listener
-	weatherApi *weatherapi.Client
+	logger        *logan.Entry
+	listener      net.Listener
+	subscriptions db.Subscriptions
+	weatherApi    *weatherapi.Client
 }
 
 func NewServer(
 	listener net.Listener,
 	weatherApi *weatherapi.Client,
+	subscriptions db.Subscriptions,
 	logger *logan.Entry,
 ) *Server {
 	return &Server{
-		logger:     logger,
-		listener:   listener,
-		weatherApi: weatherApi,
+		logger:        logger,
+		listener:      listener,
+		weatherApi:    weatherApi,
+		subscriptions: subscriptions,
 	}
 }
 
@@ -62,15 +67,23 @@ func (s *Server) requestHandler() chi.Router {
 	r := chi.NewRouter()
 
 	r.Use(
+		cors.Handler(cors.Options{
+			// it is not a production code, so we allow all origins
+			AllowedOrigins: []string{"*"},
+		}),
 		ape.RecoverMiddleware(s.logger),
 		ape.LoganMiddleware(s.logger),
 		ape.CtxMiddleware(
 			ctx.LoggerProvider(s.logger),
 			ctx.WeatherApiProvider(s.weatherApi),
+			ctx.SubscriptionsProvider(s.subscriptions),
 		),
 	)
 
-	r.Get("/weather", handlers.GetWeather)
+	r.Route("/api", func(r chi.Router) {
+		r.Get("/weather", handlers.GetWeather)
+		r.Post("/subscribe", handlers.Subscribe)
+	})
 
 	return r
 }

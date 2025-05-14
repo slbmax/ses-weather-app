@@ -3,7 +3,12 @@ module github.com/slbmax/ses-weather-app
 go 1.24.0
 
 require (
+	github.com/Masterminds/squirrel v1.5.4
+	github.com/fatih/structs v1.1.0
 	github.com/go-chi/chi/v5 v5.2.1
+	github.com/go-chi/cors v1.2.1
+	github.com/go-ozzo/ozzo-validation/v4 v4.2.1
+	github.com/hashicorp/go-uuid v1.0.3
 	github.com/mailjet/mailjet-apiv3-go/v4 v4.0.7
 	github.com/rubenv/sql-migrate v1.8.0
 	github.com/spf13/cobra v1.9.1
@@ -15,7 +20,6 @@ require (
 )
 
 require (
-	github.com/Masterminds/squirrel v1.5.4 // indirect
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/certifi/gocertifi v0.0.0-20200211180108-c7c1fbc02894 // indirect
@@ -28,7 +32,6 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible // indirect
 	github.com/go-gorp/gorp/v3 v3.1.0 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-ozzo/ozzo-validation/v4 v4.2.1 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/google/jsonapi v0.0.0-20200226002910-c8283f632fb7 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect

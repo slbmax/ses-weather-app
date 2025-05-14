@@ -7,3 +7,7 @@ weather_api:
 
 listener:
   addr: :8090
+
+
+db:
+  url: postgresql://weatherapp:weatherapp@localhost:5432/weatherapp?sslmode=disable
