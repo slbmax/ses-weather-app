@@ -11,30 +11,30 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/handlers"
-	"github.com/slbmax/ses-weather-app/internal/db"
+	"github.com/slbmax/ses-weather-app/internal/database"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/logan/v3"
 )
 
 type Server struct {
-	logger        *logan.Entry
-	listener      net.Listener
-	subscriptions db.Subscriptions
-	weatherApi    *weatherapi.Client
+	logger     *logan.Entry
+	listener   net.Listener
+	db         database.Database
+	weatherApi *weatherapi.Client
 }
 
 func NewServer(
 	listener net.Listener,
 	weatherApi *weatherapi.Client,
-	subscriptions db.Subscriptions,
+	db database.Database,
 	logger *logan.Entry,
 ) *Server {
 	return &Server{
-		logger:        logger,
-		listener:      listener,
-		weatherApi:    weatherApi,
-		subscriptions: subscriptions,
+		logger:     logger,
+		listener:   listener,
+		weatherApi: weatherApi,
+		db:         db,
 	}
 }
 
@@ -76,7 +76,7 @@ func (s *Server) requestHandler() chi.Router {
 		ape.CtxMiddleware(
 			ctx.LoggerProvider(s.logger),
 			ctx.WeatherApiProvider(s.weatherApi),
-			ctx.SubscriptionsProvider(s.subscriptions),
+			ctx.DatabaseProvider(s.db),
 		),
 	)
 

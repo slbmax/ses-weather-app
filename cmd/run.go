@@ -7,7 +7,7 @@ import (
 
 	"github.com/slbmax/ses-weather-app/internal/api"
 	"github.com/slbmax/ses-weather-app/internal/config"
-	"github.com/slbmax/ses-weather-app/internal/db/pg"
+	"github.com/slbmax/ses-weather-app/internal/database/pg"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"github.com/spf13/cobra"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -29,7 +29,7 @@ var runCmd = &cobra.Command{
 		server := api.NewServer(
 			cfg.Listener(),
 			weatherApi,
-			pg.NewSubscriptionsQ(cfg.DB()),
+			pg.NewDatabase(cfg.DB()),
 			logger.WithField("component", "api"),
 		)
 

@@ -7,7 +7,7 @@ import (
 	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/slbmax/ses-weather-app/internal/db"
+	"github.com/slbmax/ses-weather-app/internal/database"
 )
 
 const (
@@ -21,9 +21,9 @@ var (
 )
 
 type SubscribeRequest struct {
-	Email     string                   `json:"email"`
-	City      string                   `json:"city"`
-	Frequency db.SubscriptionFrequency `json:"frequency"`
+	Email     string                         `json:"email"`
+	City      string                         `json:"city"`
+	Frequency database.SubscriptionFrequency `json:"frequency"`
 }
 
 func (req *SubscribeRequest) Validate() error {
@@ -39,7 +39,7 @@ func (req *SubscribeRequest) Validate() error {
 		formParamFrequency: validation.Validate(req.Frequency,
 			validation.Required,
 			validation.By(func(value interface{}) error {
-				if f, ok := value.(db.SubscriptionFrequency); ok && f.Valid() {
+				if f, ok := value.(database.SubscriptionFrequency); ok && f.Valid() {
 					return nil
 				}
 				return fmt.Errorf("invalid frequency value: %v", value)
@@ -60,7 +60,7 @@ func NewSubscribeRequest(r *http.Request) (*SubscribeRequest, error) {
 		req = &SubscribeRequest{
 			Email:     r.PostFormValue(formParamEmail),
 			City:      r.PostFormValue(formParamCity),
-			Frequency: db.SubscriptionFrequency(r.PostFormValue(formParamFrequency)),
+			Frequency: database.SubscriptionFrequency(r.PostFormValue(formParamFrequency)),
 		}
 	case "application/json":
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {

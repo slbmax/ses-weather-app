@@ -1,4 +1,4 @@
-package db
+package database
 
 import (
 	"errors"
@@ -25,13 +25,13 @@ var (
 	ErrSubscriptionExists = errors.New("subscription already exists")
 )
 
-type Subscriptions interface {
-	// New creates a new instance of Subscriptions (separate conn)
-	New() Subscriptions
+type SubscriptionsQ interface {
+	// New creates a new instance of SubscriptionsQ (separate conn)
+	New() SubscriptionsQ
 	Insert(subscription Subscription) (id int64, err error)
 	//MarkConfirmed(id int64) error
-
-	Transaction(f func() error) error
+	//Delete(id int64) error
+	//UpdateLastNotified(id int64, lastNotifiedAt time.Time) error
 }
 
 type Subscription struct {
@@ -39,7 +39,6 @@ type Subscription struct {
 	Email          string                `structs:"email" db:"email"`
 	City           string                `structs:"city" db:"city"`
 	Frequency      SubscriptionFrequency `structs:"frequency" db:"frequency"`
-	Token          string                `structs:"token" db:"token"`
 	Confirmed      bool                  `structs:"confirmed" db:"confirmed"`
 	CreatedAt      time.Time             `structs:"created_at" db:"created_at"`
 	LastNotifiedAt *time.Time            `structs:"last_notified_at" db:"last_notified_at"`
