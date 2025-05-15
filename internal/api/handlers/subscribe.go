@@ -11,6 +11,7 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/requests"
 	"github.com/slbmax/ses-weather-app/internal/database"
+	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 )
 
 const (
@@ -28,6 +29,17 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 		logger = ctx.GetLogger(r)
 		db     = ctx.GetDatabase(r)
 	)
+
+	_, err = ctx.GetWeatherClient(r).GetCurrentWeather(request.City)
+	if err != nil {
+		if errors.Is(err, weatherapi.ErrCityNotFound) {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			logger.WithError(err).Error("failed to get current weather")
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
+	}
 
 	txErr := db.Transaction(func() error {
 		// writing data ahead to rollback in case of email sending failure

@@ -8,6 +8,7 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api"
 	"github.com/slbmax/ses-weather-app/internal/config"
 	"github.com/slbmax/ses-weather-app/internal/database/pg"
+	"github.com/slbmax/ses-weather-app/internal/notificator"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"github.com/spf13/cobra"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -19,22 +20,31 @@ var runCmd = &cobra.Command{
 	Short: "Run the Weather App server",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg := config.New(kv.MustFromEnv())
-
-		eg := errgroup.Group{}
 		ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 		defer cancel()
+		eg, ctx := errgroup.WithContext(ctx)
 
 		weatherApi := weatherapi.NewClient(cfg.WeatherAPIConfig().APIKey)
 		logger := cfg.Log()
-		server := api.NewServer(
-			cfg.Listener(),
-			weatherApi,
-			pg.NewDatabase(cfg.DB()),
-			logger.WithField("component", "api"),
-		)
 
 		eg.Go(func() error {
+			server := api.NewServer(
+				cfg.Listener(),
+				weatherApi,
+				pg.NewDatabase(cfg.DB()),
+				logger.WithField("component", "api"),
+			)
+
 			return server.Run(ctx)
+		})
+
+		eg.Go(func() error {
+			notificator.New(
+				pg.NewDatabase(cfg.DB()),
+				logger.WithField("component", "notificator"),
+			).Run(ctx)
+
+			return nil
 		})
 
 		return eg.Wait()

@@ -33,8 +33,8 @@ type SubscriptionsQ interface {
 	GetByToken(token string) (subscription *Subscription, err error)
 	UpdateConfirmed(id int64, unsubscribeToken string) (err error)
 	DeleteByToken(token string) (err error)
-	//MarkConfirmed(id int64) error
-	//UpdateLastNotified(id int64, lastNotifiedAt time.Time) error
+	SelectToNotify() ([]Subscription, error)
+	UpdateLastNotified(id int64, lastNotifiedAt time.Time) error
 }
 
 type Subscription struct {

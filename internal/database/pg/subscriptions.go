@@ -3,6 +3,7 @@ package pg
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/fatih/structs"
@@ -13,9 +14,10 @@ import (
 const (
 	subscriptionsTable = "subscriptions"
 
-	columnId        = "id"
-	columnConfirmed = "confirmed"
-	columnToken     = "token"
+	columnId             = "id"
+	columnConfirmed      = "confirmed"
+	columnToken          = "token"
+	columnLastNotifiedAt = "last_notified_at"
 
 	constraintUniqueEmail = "unique_email"
 )
@@ -48,18 +50,19 @@ func (s *subscriptionsQ) Insert(subscription database.Subscription) (id int64, e
 	return
 }
 
-func (s *subscriptionsQ) GetByToken(token string) (subscription *database.Subscription, err error) {
+func (s *subscriptionsQ) GetByToken(token string) (*database.Subscription, error) {
 	stmt := squirrel.
 		Select("*").
 		From(subscriptionsTable).
 		Where(squirrel.Eq{columnToken: token})
 
-	err = s.db.Get(&subscription, stmt)
+	var subscription database.Subscription
+	err := s.db.Get(&subscription, stmt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}
 
-	return
+	return &subscription, err
 }
 
 func (s *subscriptionsQ) UpdateConfirmed(id int64, unsubscribeToken string) error {
@@ -98,4 +101,38 @@ func (s *subscriptionsQ) DeleteByToken(token string) error {
 	} else {
 		return nil
 	}
+}
+
+func (s *subscriptionsQ) SelectToNotify() ([]database.Subscription, error) {
+	stmt := squirrel.
+		Select("*").
+		From(subscriptionsTable).
+		Where(squirrel.Eq{columnConfirmed: true}).
+		Where(squirrel.Or{
+			squirrel.Eq{columnLastNotifiedAt: nil},
+			squirrel.Expr(`
+                last_notified_at <= CURRENT_TIMESTAMP - (
+					CASE frequency
+						WHEN 'hourly' THEN INTERVAL '1 hour'
+						ELSE INTERVAL '24 hours'
+					END
+				)
+            `),
+		})
+
+	var subscriptions []database.Subscription
+	if err := s.db.Select(&subscriptions, stmt); err != nil {
+		return nil, err
+	}
+
+	return subscriptions, nil
+}
+
+func (s *subscriptionsQ) UpdateLastNotified(id int64, lastNotifiedAt time.Time) error {
+	stmt := squirrel.
+		Update(subscriptionsTable).
+		Set(columnLastNotifiedAt, lastNotifiedAt).
+		Where(squirrel.Eq{columnId: id})
+
+	return s.db.Exec(stmt)
 }
