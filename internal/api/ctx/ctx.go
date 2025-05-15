@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/slbmax/ses-weather-app/internal/database"
+	"github.com/slbmax/ses-weather-app/internal/mailer"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"gitlab.com/distributed_lab/logan/v3"
 )
@@ -15,6 +16,7 @@ const (
 	ctxKeyLogger ctxKey = iota
 	ctxKeyWeatherApi
 	ctxKeyDatabase
+	ctxKeyMailer
 )
 
 func LoggerProvider(l *logan.Entry) func(context.Context) context.Context {
@@ -44,4 +46,14 @@ func DatabaseProvider(db database.Database) func(context.Context) context.Contex
 
 func GetDatabase(r *http.Request) database.Database {
 	return r.Context().Value(ctxKeyDatabase).(database.Database).New() // returns unique connection (for transaction purposes)
+}
+
+func MailerProvider(mailer mailer.Mailer) func(context.Context) context.Context {
+	return func(ctx context.Context) context.Context {
+		return context.WithValue(ctx, ctxKeyMailer, mailer)
+	}
+}
+
+func GetMailer(r *http.Request) mailer.Mailer {
+	return r.Context().Value(ctxKeyMailer).(mailer.Mailer)
 }

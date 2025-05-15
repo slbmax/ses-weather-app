@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscription Confirmed</title>
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            text-align: center;
+        }
+        h1 {
+            color: #10b981;
+        }
+        .info {
+            font-size: 1.1em;
+            color: #374151;
+            margin-top: 20px;
+        }
+        .unsubscribe {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+        .unsubscribe a {
+            color: #ef4444;
+            text-decoration: none;
+        }
+        .unsubscribe a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>✅ Subscription Confirmed!</h1>
+    <p class="info">
+        You've successfully subscribed to weather updates for <strong>{{.City}}</strong>.
+        We'll send you updates <strong>{{.Frequency}}</strong>.
+    </p>
+
+    <div class="unsubscribe">
+        If you ever wish to unsubscribe, use the token below to do so:
+        <p>Unsubscribe token: <strong>{{.Token}}</strong></p>
+    </div>
+</div>
+</body>
+</html>

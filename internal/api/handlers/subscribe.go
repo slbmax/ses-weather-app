@@ -11,6 +11,7 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/requests"
 	"github.com/slbmax/ses-weather-app/internal/database"
+	"github.com/slbmax/ses-weather-app/internal/mailer"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 )
 
@@ -28,18 +29,8 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 	var (
 		logger = ctx.GetLogger(r)
 		db     = ctx.GetDatabase(r)
+		mail   = ctx.GetMailer(r)
 	)
-
-	_, err = ctx.GetWeatherClient(r).GetCurrentWeather(request.City)
-	if err != nil {
-		if errors.Is(err, weatherapi.ErrCityNotFound) {
-			w.WriteHeader(http.StatusBadRequest)
-		} else {
-			logger.WithError(err).Error("failed to get current weather")
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-		return
-	}
 
 	txErr := db.Transaction(func() error {
 		// writing data ahead to rollback in case of email sending failure
@@ -55,7 +46,19 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to insert subscription: %w", err)
 		}
 
-		// TODO: send confirmation email
+		// validating if city exists to avoid subscription without valid one
+		_, err = ctx.GetWeatherClient(r).GetCurrentWeather(request.City)
+		if err != nil {
+			return fmt.Errorf("failed to get weather data: %w", err)
+		}
+
+		if err = mail.SendConfirmationEmail(sub.Email, mailer.ConfirmationEmail{
+			Token:     sub.Token,
+			City:      sub.City,
+			Frequency: string(sub.Frequency),
+		}); err != nil {
+			return fmt.Errorf("failed to send confirmation email: %w", err)
+		}
 
 		return nil
 	})
@@ -65,6 +68,8 @@ func Subscribe(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	case errors.Is(txErr, database.ErrSubscriptionExists):
 		w.WriteHeader(http.StatusConflict)
+	case errors.Is(txErr, weatherapi.ErrCityNotFound):
+		w.WriteHeader(http.StatusNotFound)
 	default:
 		logger.WithError(txErr).Error("failed to execute transaction")
 		w.WriteHeader(http.StatusInternalServerError)

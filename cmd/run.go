@@ -8,7 +8,9 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api"
 	"github.com/slbmax/ses-weather-app/internal/config"
 	"github.com/slbmax/ses-weather-app/internal/database/pg"
+	"github.com/slbmax/ses-weather-app/internal/mailer"
 	"github.com/slbmax/ses-weather-app/internal/notificator"
+	"github.com/slbmax/ses-weather-app/pkg/mailjet"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"github.com/spf13/cobra"
 	"gitlab.com/distributed_lab/kit/kv"
@@ -24,6 +26,17 @@ var runCmd = &cobra.Command{
 		defer cancel()
 		eg, ctx := errgroup.WithContext(ctx)
 
+		mailjetCfg := cfg.MailjetConfig()
+		mailjetClient := mailjet.NewClient(
+			mailjetCfg.ApiKey,
+			mailjetCfg.SecretKey,
+			mailjet.From{
+				Name:  mailjetCfg.FromName,
+				Email: mailjetCfg.FromEmail,
+			},
+		)
+
+		mailer := mailer.NewMailer(mailjetClient)
 		weatherApi := weatherapi.NewClient(cfg.WeatherAPIConfig().APIKey)
 		logger := cfg.Log()
 
@@ -32,6 +45,7 @@ var runCmd = &cobra.Command{
 				cfg.Listener(),
 				weatherApi,
 				pg.NewDatabase(cfg.DB()),
+				mailer,
 				logger.WithField("component", "api"),
 			)
 
@@ -41,6 +55,8 @@ var runCmd = &cobra.Command{
 		eg.Go(func() error {
 			notificator.New(
 				pg.NewDatabase(cfg.DB()),
+				weatherApi,
+				mailer,
 				logger.WithField("component", "notificator"),
 			).Run(ctx)
 

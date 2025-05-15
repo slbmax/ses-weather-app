@@ -25,6 +25,7 @@ func Unsubscribe(w http.ResponseWriter, r *http.Request) {
 	// - confirmation token at the unconfirmed state
 	// - unsubscribe token at the confirmed state
 	// (Unsubscribes an email from weather updates using the token sent in email__S__)
+	// also, no goodbye email is sent for simplicity
 	err = db.SubscriptionsQ().DeleteByToken(request.Token)
 	switch {
 	case err == nil:

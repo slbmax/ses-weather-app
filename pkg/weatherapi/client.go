@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 const baseUrl = "https://api.weatherapi.com/v1"
@@ -40,6 +41,11 @@ func (c *Client) GetCurrentWeather(city string) (*WeatherCurrentResponse, error)
 	var weatherResponse WeatherCurrentResponse
 	if err = json.NewDecoder(resp.Body).Decode(&weatherResponse); err != nil {
 		return nil, err
+	}
+
+	// weather api can return a different city name than requested (especially when auto-completing something)
+	if strings.ToLower(weatherResponse.Location.Name) != strings.ToLower(city) {
+		return nil, ErrCityNotFound
 	}
 
 	return &weatherResponse, nil

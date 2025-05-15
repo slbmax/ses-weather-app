@@ -9,6 +9,7 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api/ctx"
 	"github.com/slbmax/ses-weather-app/internal/api/requests"
 	"github.com/slbmax/ses-weather-app/internal/database"
+	"github.com/slbmax/ses-weather-app/internal/mailer"
 )
 
 var (
@@ -25,6 +26,7 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 	var (
 		logger = ctx.GetLogger(r)
 		db     = ctx.GetDatabase(r)
+		mail   = ctx.GetMailer(r)
 	)
 
 	txErr := db.Transaction(func() error {
@@ -42,7 +44,13 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to confirm subscription: %w", err)
 		}
 
-		// TODO: send email with unsubscribe token
+		if err = mail.SendConfirmationSuccessEmail(subscription.Email, mailer.ConfirmationSuccessEmail{
+			Token:     unsubToken,
+			City:      subscription.City,
+			Frequency: string(subscription.Frequency),
+		}); err != nil {
+			return fmt.Errorf("failed to send confirmation success email: %w", err)
+		}
 
 		return nil
 	})
@@ -51,7 +59,7 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 	case txErr == nil:
 		w.WriteHeader(http.StatusOK)
 	case errors.Is(err, errSubscriptionConfirmed):
-		// this token is supposed to be used as a confirmation token
+		// this token is supposed to be used as an unsubscribe token
 		w.WriteHeader(http.StatusBadRequest)
 	case errors.Is(txErr, database.ErrNoRowsAffected) ||
 		errors.Is(txErr, sql.ErrNoRows):

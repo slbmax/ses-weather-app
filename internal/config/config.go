@@ -11,6 +11,7 @@ type Config struct {
 	pgdb.Databaser
 	comfig.Listenerer
 	WeatherAPIConfiger
+	MailjetConfiger
 }
 
 func New(getter kv.Getter) *Config {
@@ -19,5 +20,6 @@ func New(getter kv.Getter) *Config {
 		Databaser:          pgdb.NewDatabaser(getter),
 		Listenerer:         comfig.NewListenerer(getter),
 		WeatherAPIConfiger: NewWeatherAPIConfiger(getter),
+		MailjetConfiger:    NewMailjetConfiger(getter),
 	}
 }

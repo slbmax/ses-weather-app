@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Update</title>
+    <style>
+        body {
+            background-color: #f3f4f6;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .card {
+            max-width: 600px;
+            background-color: white;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+        }
+        .header {
+            text-align: center;
+            color: #2563eb;
+        }
+        .weather-icon {
+            width: 80px;
+            height: 80px;
+            margin: 20px auto;
+        }
+        .info {
+            font-size: 1.1em;
+            margin: 10px 0;
+            color: #374151;
+        }
+        .footer {
+            text-align: center;
+            font-size: 0.9em;
+            color: #9ca3af;
+            margin-top: 30px;
+        }
+
+        .content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+            margin-top: 20px;
+        }
+
+        .info-block {
+            flex: 1;
+        }
+
+        .weather-icon {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1 class="header">🌤 {{.Frequency | title}} Weather Notification for {{.City}}</h1>
+
+    <div class="content">
+        <img class="weather-icon" src="https://cdn-icons-png.flaticon.com/512/1116/1116453.png" alt="Weather icon">
+        <div class="info-block">
+            <p class="info"><strong>Temperature:</strong> {{.Temperature}}°C</p>
+            <p class="info"><strong>Condition:</strong> {{.Description}}</p>
+            <p class="info"><strong>Humidity:</strong> {{.Humidity}}%</p>
+        </div>
+    </div>
+
+    <div class="footer">This update was sent based on your {{.Frequency}} preferences.</div>
+</div>
+</body>
+</html>

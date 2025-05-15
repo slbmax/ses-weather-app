@@ -14,6 +14,7 @@ import (
 	"github.com/slbmax/ses-weather-app/internal/api/handlers"
 	"github.com/slbmax/ses-weather-app/internal/api/requests"
 	"github.com/slbmax/ses-weather-app/internal/database"
+	"github.com/slbmax/ses-weather-app/internal/mailer"
 	"github.com/slbmax/ses-weather-app/pkg/weatherapi"
 	"gitlab.com/distributed_lab/ape"
 	"gitlab.com/distributed_lab/logan/v3"
@@ -23,6 +24,7 @@ type Server struct {
 	logger     *logan.Entry
 	listener   net.Listener
 	db         database.Database
+	mailer     mailer.Mailer
 	weatherApi *weatherapi.Client
 }
 
@@ -30,12 +32,14 @@ func NewServer(
 	listener net.Listener,
 	weatherApi *weatherapi.Client,
 	db database.Database,
+	mailer mailer.Mailer,
 	logger *logan.Entry,
 ) *Server {
 	return &Server{
 		logger:     logger,
 		listener:   listener,
 		weatherApi: weatherApi,
+		mailer:     mailer,
 		db:         db,
 	}
 }
@@ -79,6 +83,7 @@ func (s *Server) requestHandler() chi.Router {
 			ctx.LoggerProvider(s.logger),
 			ctx.WeatherApiProvider(s.weatherApi),
 			ctx.DatabaseProvider(s.db),
+			ctx.MailerProvider(s.mailer),
 		),
 	)
 
