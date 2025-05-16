@@ -1,6 +1,23 @@
 services:
+  weather-app:
+    build:
+      context: ../
+      dockerfile: build/Dockerfile
+    container_name: weather-app
+    environment:
+      KV_VIPER_FILE: config.yaml
+    volumes:
+      - ./config.yaml:/config.yaml
+    entrypoint: sh -c "weather-app migrate up && weather-app run --mocks=true"
+    ports:
+      - "8090:8090"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: postgres:16
+    container_name: postgres
     environment:
       POSTGRES_DB: "weatherapp"
       POSTGRES_USER: "weatherapp"

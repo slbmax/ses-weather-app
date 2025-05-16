@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os/signal"
 	"syscall"
 
@@ -17,35 +18,56 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+var useMocks bool
+
+func init() {
+	runCmd.Flags().BoolVar(&useMocks, "mocks", false, "Use mock APIs for testing purposes")
+}
+
 var runCmd = &cobra.Command{
 	Use:   "run",
 	Short: "Run the Weather App server",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		cfg := config.New(kv.MustFromEnv())
-		ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
-		defer cancel()
-		eg, ctx := errgroup.WithContext(ctx)
+		getter, err := kv.FromEnv()
+		if err != nil {
+			return fmt.Errorf("failed to get configer key-value getter: %w", err)
+		}
 
-		mailjetCfg := cfg.MailjetConfig()
-		mailjetClient := mailjet.NewClient(
-			mailjetCfg.ApiKey,
-			mailjetCfg.SecretKey,
-			mailjet.From{
-				Name:  mailjetCfg.FromName,
-				Email: mailjetCfg.FromEmail,
-			},
+		cfg := config.New(getter)
+
+		stopCtx, cancel := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
+		defer cancel()
+
+		var (
+			eg, ctx    = errgroup.WithContext(stopCtx)
+			mail       mailer.Mailer
+			weatherApi weatherapi.WeatherProvider
+			logger     = cfg.Log()
 		)
 
-		mailer := mailer.NewMailer(mailjetClient)
-		weatherApi := weatherapi.NewClient(cfg.WeatherAPIConfig().APIKey)
-		logger := cfg.Log()
+		if useMocks {
+			mail = mailer.NewMockMailer()
+			weatherApi = weatherapi.NewMockWeatherProvider()
+		} else {
+			mailjetCfg := cfg.MailjetConfig()
+			mailjetClient := mailjet.NewClient(
+				mailjetCfg.ApiKey,
+				mailjetCfg.SecretKey,
+				mailjet.From{
+					Name:  mailjetCfg.FromName,
+					Email: mailjetCfg.FromEmail,
+				},
+			)
+			mail = mailer.NewMailer(mailjetClient)
+			weatherApi = weatherapi.NewClient(cfg.WeatherAPIConfig().APIKey)
+		}
 
 		eg.Go(func() error {
 			server := api.NewServer(
 				cfg.Listener(),
 				weatherApi,
 				pg.NewDatabase(cfg.DB()),
-				mailer,
+				mail,
 				logger.WithField("component", "api"),
 			)
 
@@ -56,7 +78,7 @@ var runCmd = &cobra.Command{
 			notificator.New(
 				pg.NewDatabase(cfg.DB()),
 				weatherApi,
-				mailer,
+				mail,
 				logger.WithField("component", "notificator"),
 			).Run(ctx)
 

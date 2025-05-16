@@ -52,6 +52,9 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 			return fmt.Errorf("failed to send confirmation success email: %w", err)
 		}
 
+		// additionally, the notification email can be sent immediately,
+		// for simplicity, leaving this to the notifier
+
 		return nil
 	})
 

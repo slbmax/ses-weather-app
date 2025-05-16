@@ -25,12 +25,12 @@ type Server struct {
 	listener   net.Listener
 	db         database.Database
 	mailer     mailer.Mailer
-	weatherApi *weatherapi.Client
+	weatherApi weatherapi.WeatherProvider
 }
 
 func NewServer(
 	listener net.Listener,
-	weatherApi *weatherapi.Client,
+	weatherApi weatherapi.WeatherProvider,
 	db database.Database,
 	mailer mailer.Mailer,
 	logger *logan.Entry,
@@ -57,7 +57,7 @@ func (s *Server) Run(ctx context.Context) error {
 		if err := srv.Shutdown(shutdownDeadline); err != nil {
 			s.logger.WithError(err).Error("failed to shutdown http server")
 		} else {
-			s.logger.Info("http serving stopped: context canceled")
+			s.logger.Info("http serving stopped")
 		}
 	}()
 

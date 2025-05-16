@@ -9,6 +9,10 @@ import (
 
 const baseUrl = "https://api.weatherapi.com/v1"
 
+type WeatherProvider interface {
+	GetCurrentWeather(city string) (*WeatherCurrentResponse, error)
+}
+
 type Client struct {
 	apiKey string
 }

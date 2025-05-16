@@ -28,14 +28,14 @@ func GetLogger(r *http.Request) *logan.Entry {
 	return r.Context().Value(ctxKeyLogger).(*logan.Entry)
 }
 
-func WeatherApiProvider(api *weatherapi.Client) func(context.Context) context.Context {
+func WeatherApiProvider(api weatherapi.WeatherProvider) func(context.Context) context.Context {
 	return func(ctx context.Context) context.Context {
 		return context.WithValue(ctx, ctxKeyWeatherApi, api)
 	}
 }
 
-func GetWeatherClient(r *http.Request) *weatherapi.Client {
-	return r.Context().Value(ctxKeyWeatherApi).(*weatherapi.Client)
+func GetWeatherClient(r *http.Request) weatherapi.WeatherProvider {
+	return r.Context().Value(ctxKeyWeatherApi).(weatherapi.WeatherProvider)
 }
 
 func DatabaseProvider(db database.Database) func(context.Context) context.Context {

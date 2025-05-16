@@ -8,5 +8,10 @@ weather_api:
 listener:
   addr: :8090
 
+mailjet:
+  api_key: YOUR_API_KEY
+  secret_key: YOUR_API_KEY
+  from_email: YOUR_EMAIL
+
 db:
   url: postgresql://weatherapp:weatherapp@localhost:5432/weatherapp?sslmode=disable

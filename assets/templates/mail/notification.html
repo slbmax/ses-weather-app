@@ -22,11 +22,6 @@
             text-align: center;
             color: #2563eb;
         }
-        .weather-icon {
-            width: 80px;
-            height: 80px;
-            margin: 20px auto;
-        }
         .info {
             font-size: 1.1em;
             margin: 10px 0;
@@ -40,22 +35,17 @@
         }
 
         .content {
-            display: flex;
+            display: grid;
+            grid-template-columns: 1fr auto;
             align-items: center;
-            justify-content: space-between;
-            gap: 50px;
+            gap: 40px;
             margin-top: 20px;
         }
 
         .info-block {
-            flex: 1;
+            color: #374151;
         }
 
-        .weather-icon {
-            width: 80px;
-            height: 80px;
-            flex-shrink: 0;
-        }
     </style>
 </head>
 <body>
@@ -63,11 +53,10 @@
     <h1 class="header">🌤 {{.Frequency | title}} Weather Notification for {{.City}}</h1>
 
     <div class="content">
-        <img class="weather-icon" src="https://cdn-icons-png.flaticon.com/512/1116/1116453.png" alt="Weather icon">
         <div class="info-block">
             <p class="info"><strong>Temperature:</strong> {{.Temperature}}°C</p>
-            <p class="info"><strong>Condition:</strong> {{.Description}}</p>
             <p class="info"><strong>Humidity:</strong> {{.Humidity}}%</p>
+            <p class="info"><strong>Condition:</strong> {{.Description}}</p>
         </div>
     </div>
 

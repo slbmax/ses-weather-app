@@ -20,12 +20,12 @@ const (
 
 type Notificator struct {
 	db         database.Database
-	weatherApi *weatherapi.Client
+	weatherApi weatherapi.WeatherProvider
 	mailer     mailer.Mailer
 	logger     *logan.Entry
 }
 
-func New(db database.Database, weatherApi *weatherapi.Client, mailer mailer.Mailer, logger *logan.Entry) *Notificator {
+func New(db database.Database, weatherApi weatherapi.WeatherProvider, mailer mailer.Mailer, logger *logan.Entry) *Notificator {
 	return &Notificator{
 		db:         db,
 		logger:     logger,
