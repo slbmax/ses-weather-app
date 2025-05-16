@@ -5,9 +5,12 @@ services:
       dockerfile: build/Dockerfile
     container_name: weather-app
     environment:
+      # points to the configuration file
       KV_VIPER_FILE: config.yaml
     volumes:
       - ./config.yaml:/config.yaml
+    # allows the application to execute migrations and run
+    # it is safe to run this command multiple times
     entrypoint: sh -c "weather-app migrate up && weather-app run --mocks=true"
     ports:
       - "8090:8090"

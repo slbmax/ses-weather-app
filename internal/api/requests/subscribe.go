@@ -27,6 +27,10 @@ type SubscribeRequest struct {
 }
 
 func (req *SubscribeRequest) Validate() error {
+	if req == nil {
+		return fmt.Errorf("request is nil")
+	}
+
 	return validation.Errors{
 		formParamEmail: validation.Validate(req.Email,
 			validation.Required,
@@ -66,6 +70,8 @@ func NewSubscribeRequest(r *http.Request) (*SubscribeRequest, error) {
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			return nil, fmt.Errorf("failed to decode json body: %w", err)
 		}
+	default:
+		return nil, fmt.Errorf("unsupported content type: %s", r.Header.Get("Content-Type"))
 	}
 
 	if err := req.Validate(); err != nil {
