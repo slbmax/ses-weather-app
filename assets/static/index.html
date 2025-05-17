@@ -63,7 +63,7 @@
             margin-top: 20px;
         }
         .weather-details {
-            display: flex;
+            display: grid;
             justify-content: space-between;
             flex-wrap: wrap;
             margin-top: 15px;
@@ -197,6 +197,8 @@
             if (!response.ok) {
                 if (response.status === 404) {
                     throw new Error('City not found. Please check the spelling and try again.');
+                } else if (response.status === 400) {
+                    throw new Error('Invalid city. Please check the city name and try again.');
                 } else {
                     throw new Error('Failed to fetch weather data. Please try again later.');
                 }
@@ -255,6 +257,8 @@
             if (!response.ok) {
                 if (response.status === 409) {
                     throw new Error('This email is already subscribed. Please use a different email.');
+                } else if (response.status === 400) {
+                    throw new Error('Invalid input. Please check your details and try again.');
                 } else {
                     throw new Error('Subscription failed. Please try again later.');
                 }
@@ -302,6 +306,8 @@
             if (!response.ok) {
                 if (response.status === 404) {
                     throw new Error('Invalid token. Please check and try again.');
+                } else if (response.status === 400) {
+                    throw new Error('Invalid token. Please check the input and try again.');
                 } else {
                     throw new Error(`Failed to ${action} subscription. Please try again later.`);
                 }

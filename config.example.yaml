@@ -13,5 +13,10 @@ mailjet:
   secret_key: YOUR_API_KEY
   from_email: YOUR_EMAIL
 
+serve_static:
+  enabled: true
+  addr: :8080
+  base_api_url: "http://localhost:8090/api"
+
 db:
   url: postgresql://weatherapp:weatherapp@localhost:5432/weatherapp?sslmode=disable

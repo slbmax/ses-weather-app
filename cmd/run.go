@@ -89,6 +89,8 @@ var runCmd = &cobra.Command{
 		serveStaticCfg := cfg.ServeStaticConfig()
 		if serveStaticCfg.Enabled {
 			eg.Go(func() error {
+				logger.Infof("static server listening on %s", serveStaticCfg.Listener.Addr().String())
+
 				return static.Serve(ctx,
 					static.IndexData{
 						BaseApiUrl: serveStaticCfg.BaseApiUrl,

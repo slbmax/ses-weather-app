@@ -23,8 +23,11 @@ Frameworks and libraries (most significant):
 - `chi` — HTTP shenanigans;
 - `pgdb`, `squirrel` — for PostgreSQL;
 - `spf13/cobra` — for CLI;
-- `html/template` — for HTML templates (email bodies);
+- `html/template` — for HTML templates (email bodies) and static HTML page;
 - `distributed_lab` — kit for building microservices (configuration, logging, middlewares, etc.).
+
+The implementation consists of an HTTP server that handles the required endpoints to manage user subscriptions
+and a background worker that periodically fetches pending subscriptions to notify and sends emails with weather updates.
 
 ## Running locally
 
@@ -69,9 +72,11 @@ When running with Docker Compose, the `docker-compose.yml` setup already include
 
 ## Known limitations, issues and possible improvements
 - confirmation/unsubscription tokens have no expiration time (although this is not defined by the specification provided);
+- there is no confirmation/unsubscription link in the email body (although this is not defined by the specification provided);
 - the application does not support multiple subscriptions for the same email address (although this is not defined by the specification provided);
 - the spec defines `Subscription` model, but it never uses it, so do I;
 - the spec doesn't define `500 Internal Server Error` response, but I've included it in the code;
 - there is no usage of batch processing for sending emails, batch querying the data from the weather API, bulk updates of db records.
 Instead, there is a simple concurrent processing of the data using weather data caching, semaphore and transactional queries to fully control the processing flow;
 - database schema is simplified to the one table with all the data in it (however, everything still looks okay);
+- **`index.html` page is AI-generated (I can't stand frontend development);**
