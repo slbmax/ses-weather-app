@@ -32,6 +32,12 @@ Frameworks and libraries (most significant):
 There is a [docker-compose.yml](./build/docker-compose.yml) file supposed to spin up the application alongside PostgreSQL database.
 It is located in the `/build` directory.
 
+The configured application includes:
+- `PostgreSQL` database for storing the data;
+- application itself with the next open ports:
+  - `8090` for HTTP API;
+  - `8080` for `index.html` page;
+
 To run the application, execute the following command in the root directory of the project:
 
 ```bash

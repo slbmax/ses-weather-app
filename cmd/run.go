@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/slbmax/ses-weather-app/assets/static"
 	"github.com/slbmax/ses-weather-app/internal/api"
 	"github.com/slbmax/ses-weather-app/internal/config"
 	"github.com/slbmax/ses-weather-app/internal/database/pg"
@@ -84,6 +85,18 @@ var runCmd = &cobra.Command{
 
 			return nil
 		})
+
+		serveStaticCfg := cfg.ServeStaticConfig()
+		if serveStaticCfg.Enabled {
+			eg.Go(func() error {
+				return static.Serve(ctx,
+					static.IndexData{
+						BaseApiUrl: serveStaticCfg.BaseApiUrl,
+					},
+					serveStaticCfg.Listener,
+				)
+			})
+		}
 
 		return eg.Wait()
 	},

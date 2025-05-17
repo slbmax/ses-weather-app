@@ -12,14 +12,16 @@ type Config struct {
 	comfig.Listenerer
 	WeatherAPIConfiger
 	MailjetConfiger
+	ServeStaticConfiger
 }
 
 func New(getter kv.Getter) *Config {
 	return &Config{
-		Logger:             comfig.NewLogger(getter, comfig.LoggerOpts{}),
-		Databaser:          pgdb.NewDatabaser(getter),
-		Listenerer:         comfig.NewListenerer(getter),
-		WeatherAPIConfiger: NewWeatherAPIConfiger(getter),
-		MailjetConfiger:    NewMailjetConfiger(getter),
+		Logger:              comfig.NewLogger(getter, comfig.LoggerOpts{}),
+		Databaser:           pgdb.NewDatabaser(getter),
+		Listenerer:          comfig.NewListenerer(getter),
+		WeatherAPIConfiger:  NewWeatherAPIConfiger(getter),
+		MailjetConfiger:     NewMailjetConfiger(getter),
+		ServeStaticConfiger: NewServeStaticConfiger(getter),
 	}
 }

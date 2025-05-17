@@ -13,6 +13,7 @@ services:
     # it is safe to run this command multiple times
     entrypoint: sh -c "weather-app migrate up && weather-app run --mocks=true"
     ports:
+      - "8080:8080"
       - "8090:8090"
     depends_on:
       postgres:

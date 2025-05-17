@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #weatherResult {
+            display: none;
+            margin-top: 20px;
+        }
+        .weather-details {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .weather-detail {
+            flex-basis: 30%;
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+        .success-message {
+            color: #27ae60;
+            font-weight: 600;
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .error-message {
+            color: #e74c3c;
+            font-weight: 600;
+            display: none;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .section-title {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<h1>Weather Forecast App</h1>
+
+<div class="container">
+    <!-- Current Weather Section -->
+    <div class="card">
+        <h2 class="section-title">Get Current Weather</h2>
+        <div class="form-group">
+            <label for="weatherCity">City Name:</label>
+            <input type="text" id="weatherCity" placeholder="Enter city name (e.g., London, New York)">
+        </div>
+        <button id="getWeatherBtn">Get Weather</button>
+
+        <div id="weatherResult" class="card">
+            <h3 id="cityName"></h3>
+            <div class="weather-details">
+                <div class="weather-detail">
+                    <div>Temperature</div>
+                    <div id="temperature" style="font-size: 24px; font-weight: bold;"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Humidity</div>
+                    <div id="humidity" style="font-size: 24px; font-weight: bold;"></div>
+                </div>
+                <div class="weather-detail">
+                    <div>Condition</div>
+                    <div id="description" style="font-size: 20px; font-weight: bold;"></div>
+                </div>
+            </div>
+        </div>
+        <div id="weatherError" class="error-message"></div>
+    </div>
+
+    <!-- Subscription Section -->
+    <div class="card">
+        <h2 class="section-title">Subscribe to Weather Updates</h2>
+        <form id="subscriptionForm">
+            <div class="form-group">
+                <label for="email">Email Address:</label>
+                <input type="email" id="email" required placeholder="your.email@example.com">
+            </div>
+            <div class="form-group">
+                <label for="subCity">City:</label>
+                <input type="text" id="subCity" required placeholder="Enter city name">
+            </div>
+            <div class="form-group">
+                <label for="frequency">Update Frequency:</label>
+                <select id="frequency" required>
+                    <option value="">-- Select frequency --</option>
+                    <option value="hourly">Hourly</option>
+                    <option value="daily">Daily</option>
+                </select>
+            </div>
+            <button type="submit">Subscribe</button>
+        </form>
+        <div id="subscriptionSuccess" class="success-message">
+            Subscription requested! Please check your email to confirm.
+        </div>
+        <div id="subscriptionError" class="error-message"></div>
+    </div>
+
+    <!-- Token Management Section -->
+    <div class="card">
+        <h2 class="section-title">Manage Subscription</h2>
+        <div class="form-group">
+            <label for="token">Token:</label>
+            <input type="text" id="token" placeholder="Enter token from your email">
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button id="confirmBtn" style="flex: 1;">Confirm Subscription</button>
+            <button id="unsubscribeBtn" style="flex: 1; background-color: #e74c3c;">Unsubscribe</button>
+        </div>
+        <div id="tokenSuccess" class="success-message"></div>
+        <div id="tokenError" class="error-message"></div>
+    </div>
+</div>
+
+<script>
+    // Base API URL
+    const baseApiUrl = {{ .BaseApiUrl }};
+
+    // Get weather function
+    document.getElementById('getWeatherBtn').addEventListener('click', async () => {
+        const city = document.getElementById('weatherCity').value.trim();
+        const weatherResult = document.getElementById('weatherResult');
+        const weatherError = document.getElementById('weatherError');
+
+        if (!city) {
+            weatherError.textContent = 'Please enter a city name';
+            weatherError.style.display = 'block';
+            weatherResult.style.display = 'none';
+            return;
+        }
+
+        try {
+            const response = await fetch(`${baseApiUrl}/weather?city=${encodeURIComponent(city)}`);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('City not found. Please check the spelling and try again.');
+                } else {
+                    throw new Error('Failed to fetch weather data. Please try again later.');
+                }
+            }
+
+            const data = await response.json();
+
+            // Display the weather information
+            document.getElementById('cityName').textContent = city;
+            document.getElementById('temperature').textContent = `${data.temperature}°C`;
+            document.getElementById('humidity').textContent = `${data.humidity}%`;
+            document.getElementById('description').textContent = data.description;
+
+            weatherResult.style.display = 'block';
+            weatherError.style.display = 'none';
+
+        } catch (error) {
+            weatherError.textContent = error.message;
+            weatherError.style.display = 'block';
+            weatherResult.style.display = 'none';
+        }
+    });
+
+    // Subscribe function
+    document.getElementById('subscriptionForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const city = document.getElementById('subCity').value.trim();
+        const frequency = document.getElementById('frequency').value;
+
+        const subscriptionSuccess = document.getElementById('subscriptionSuccess');
+        const subscriptionError = document.getElementById('subscriptionError');
+
+        if (!email || !city || !frequency) {
+            subscriptionError.textContent = 'Please fill in all fields';
+            subscriptionError.style.display = 'block';
+            subscriptionSuccess.style.display = 'none';
+            return;
+        }
+
+        try {
+            const params = new URLSearchParams();
+            params.append('email', email);
+            params.append('city', city);
+            params.append('frequency', frequency);
+
+            const response = await fetch(`${baseApiUrl}/subscribe`, {
+                method: 'POST',
+                body: params.toString(), // Convert URLSearchParams to the encoded string
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 409) {
+                    throw new Error('This email is already subscribed. Please use a different email.');
+                } else {
+                    throw new Error('Subscription failed. Please try again later.');
+                }
+            }
+
+            // Show success message
+            subscriptionSuccess.style.display = 'block';
+            subscriptionError.style.display = 'none';
+
+            // Reset form
+            document.getElementById('subscriptionForm').reset();
+
+        } catch (error) {
+            subscriptionError.textContent = error.message;
+            subscriptionError.style.display = 'block';
+            subscriptionSuccess.style.display = 'none';
+        }
+    });
+
+    // Token Management functions
+    document.getElementById('confirmBtn').addEventListener('click', async () => {
+        await handleTokenAction('confirm');
+    });
+
+    document.getElementById('unsubscribeBtn').addEventListener('click', async () => {
+        await handleTokenAction('unsubscribe');
+    });
+
+    async function handleTokenAction(action) {
+        const token = document.getElementById('token').value.trim();
+        const tokenSuccess = document.getElementById('tokenSuccess');
+        const tokenError = document.getElementById('tokenError');
+
+        if (!token) {
+            tokenError.textContent = 'Please enter a token';
+            tokenError.style.display = 'block';
+            tokenSuccess.style.display = 'none';
+            return;
+        }
+
+        try {
+            const endpoint = action === 'confirm' ? 'confirm' : 'unsubscribe';
+            const response = await fetch(`${baseApiUrl}/${endpoint}/${token}`);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw new Error('Invalid token. Please check and try again.');
+                } else {
+                    throw new Error(`Failed to ${action} subscription. Please try again later.`);
+                }
+            }
+
+            // Show success message
+            tokenSuccess.textContent = action === 'confirm'
+                ? 'Subscription confirmed successfully!'
+                : 'Unsubscribed successfully!';
+            tokenSuccess.style.display = 'block';
+            tokenError.style.display = 'none';
+
+            // Reset token field
+            document.getElementById('token').value = '';
+
+        } catch (error) {
+            tokenError.textContent = error.message;
+            tokenError.style.display = 'block';
+            tokenSuccess.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
