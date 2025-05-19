@@ -3,15 +3,23 @@
 ## Table of Contents
 
 - [Description](#description)
+- [Deployment](#deployment)
 - [Running locally](#running-locally)
   - [Running in Docker (mocked APIs)](#running-in-docker)
   - [Configuring the full application](#configuring-the-full-application)
   - [Migrating the database](#migrating-the-database)
 - [Known limitations, issues and possible improvements](#known-limitations-issues-and-possible-improvements)
+- [Contacts](#contacts)
 
 ## Description
 
 Weather API application allows users to subscribe to weather updates for a chosen city. 
+
+![Weather API application](./assets/pictures/page.png)
+
+An example of the weather notification email:
+
+![Weather notification email](./assets/pictures/notification.png)
 
 Application is built using Go 1.24 programming language.
 
@@ -29,6 +37,14 @@ Frameworks and libraries (most significant):
 The implementation consists of an HTTP server that handles the required endpoints to manage user subscriptions
 and a background worker that periodically fetches pending subscriptions to notify and sends emails with weather updates.
 
+## Deployment
+
+The application is deployed on the private VM and can be accessed via the following links:
+- http://34.59.198.232:8080 — for the web-page;
+- http://34.59.198.232:8090 — for the API.
+
+**Note: There is no static IP address assigned to the VM, so the IP address may change.
+See [contacts](#contacts) section to report a possible app failure**
 ## Running locally
 
 ### Running in Docker
@@ -80,3 +96,8 @@ When running with Docker Compose, the `docker-compose.yml` setup already include
 Instead, there is a simple concurrent processing of the data using weather data caching, semaphore and transactional queries to fully control the processing flow;
 - database schema is simplified to the one table with all the data in it (however, everything still looks okay);
 - **`index.html` page is AI-generated (I can't stand frontend development);**
+
+# Contacts
+
+If there are any questions related to the project (application cannot be started properly, links do not work, API keys required),
+please contact [Max](https://t.me/slbmax)

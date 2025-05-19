@@ -18,10 +18,14 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_notified_at TIMESTAMP WITH TIME ZONE,
 
-    CONSTRAINT unique_email UNIQUE (email)
+    CONSTRAINT unique_email UNIQUE (email),
+    CONSTRAINT unique_token UNIQUE (token)
 );
+
+CREATE INDEX idx_subscriptions_notification ON subscriptions(confirmed, last_notified_at, frequency);
+
 
 
 -- +migrate Down
-
+DROP INDEX IF EXISTS idx_subscriptions_notification;
 DROP TABLE IF EXISTS subscriptions;
