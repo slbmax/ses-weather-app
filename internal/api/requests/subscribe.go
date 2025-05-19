@@ -38,7 +38,7 @@ func (req *SubscribeRequest) Validate() error {
 		),
 		formParamCity: validation.Validate(req.City,
 			validation.Required,
-			validation.Length(2, 100).Error("invalid city name"),
+			validation.Length(1, 100).Error("invalid city name"),
 		),
 		formParamFrequency: validation.Validate(req.Frequency,
 			validation.Required,
@@ -67,7 +67,7 @@ func NewSubscribeRequest(r *http.Request) (*SubscribeRequest, error) {
 			Frequency: database.SubscriptionFrequency(r.PostFormValue(formParamFrequency)),
 		}
 	case "application/json":
-		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			return nil, fmt.Errorf("failed to decode json body: %w", err)
 		}
 	default:

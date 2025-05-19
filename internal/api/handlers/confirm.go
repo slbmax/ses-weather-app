@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	errSubscriptionConfirmed = errors.New("subscription already confirmed")
+	ErrSubscriptionConfirmed = errors.New("subscription already confirmed")
 )
 
 func Confirm(w http.ResponseWriter, r *http.Request) {
@@ -36,7 +36,7 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 		} else if subscription == nil {
 			return sql.ErrNoRows
 		} else if subscription.Confirmed {
-			return errSubscriptionConfirmed
+			return ErrSubscriptionConfirmed
 		}
 
 		unsubToken := GenerateToken()
@@ -61,7 +61,7 @@ func Confirm(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case txErr == nil:
 		w.WriteHeader(http.StatusOK)
-	case errors.Is(err, errSubscriptionConfirmed):
+	case errors.Is(txErr, ErrSubscriptionConfirmed):
 		// this token is supposed to be used as an unsubscribe token
 		w.WriteHeader(http.StatusBadRequest)
 	case errors.Is(txErr, database.ErrNoRowsAffected) ||
