@@ -1,0 +1,22 @@
+packages:
+  github.com/slbmax/ses-weather-app/internal/database:
+    config:
+      dir: ./internal/database/mock
+      pkgname: mock
+      filename: "subscriptions.go"
+    interfaces:
+      SubscriptionsQ:
+  github.com/slbmax/ses-weather-app/pkg/weatherapi:
+    config:
+      dir: ./pkg/weatherapi/mock
+      pkgname: mock
+      filename: "client.go"
+    interfaces:
+      WeatherProvider:
+  github.com/slbmax/ses-weather-app/internal/mailer:
+    config:
+      dir: ./internal/mailer/mock
+      pkgname: mock
+      filename: "mailer.go"
+    interfaces:
+      Mailer:

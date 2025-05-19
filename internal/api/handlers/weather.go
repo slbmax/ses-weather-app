@@ -36,6 +36,6 @@ func Weather(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := responses.NewGetWeatherResponse(weather.CurrentWeather)
+	response := responses.NewWeatherResponse(weather.CurrentWeather)
 	ape.Render(w, response)
 }

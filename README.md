@@ -4,6 +4,7 @@
 
 - [Description](#description)
 - [Deployment](#deployment)
+- [Tests coverage](#tests-coverage)
 - [Running locally](#running-locally)
   - [Running in Docker (mocked APIs)](#running-in-docker)
   - [Configuring the full application](#configuring-the-full-application)
@@ -33,6 +34,7 @@ Frameworks and libraries (most significant):
 - `spf13/cobra` — for CLI;
 - `html/template` — for HTML templates (email bodies) and static HTML page;
 - `distributed_lab` — kit for building microservices (configuration, logging, middlewares, etc.).
+- `mockery` — for mocking interfaces (testing purposes);
 
 The implementation consists of an HTTP server that handles the required endpoints to manage user subscriptions
 and a background worker that periodically fetches pending subscriptions to notify and sends emails with weather updates.
@@ -45,6 +47,15 @@ The application is deployed on the private VM and can be accessed via the follow
 
 **Note: There is no static IP address assigned to the VM, so the IP address may change.
 See [contacts](#contacts) section to report a possible app failure**
+
+## Tests coverage
+
+Tests cover only API server (integration-like with mocked interfaces); they are located in the one [file](./internal/api/server_test.go).
+The common test cases map practice is used in a pair with the `httptest` package to test the HTTP server.
+The mocked interfaces are used to test the application without the need for real API calls or database access.
+
+As a possible improvement, the tests can be split into several files and test the application on a handler func level.
+
 ## Running locally
 
 ### Running in Docker
@@ -79,6 +90,8 @@ mailjet:
 ```
 2. Remove the `--mocks=true` flag from the application entrypoint in the [docker-compose.yml](./build/docker-compose.yml)
 
+See [Contacts](#contacts) section to get the API keys.
+
 ### Migrating the database
 
 To migrate the database, you can use the `migrate up/down` commands provided by the CLI.
@@ -95,9 +108,9 @@ When running with Docker Compose, the `docker-compose.yml` setup already include
 - there is no usage of batch processing for sending emails, batch querying the data from the weather API, bulk updates of db records.
 Instead, there is a simple concurrent processing of the data using weather data caching, semaphore and transactional queries to fully control the processing flow;
 - database schema is simplified to the one table with all the data in it (however, everything still looks okay);
-- **`index.html` page is AI-generated (I can't stand frontend development);**
+- **`index.html` page is AI-generated (I can't stand frontend development)**
 
-# Contacts
+## Contacts
 
 If there are any questions related to the project (application cannot be started properly, links do not work, API keys required),
 please contact [Max](https://t.me/slbmax)
