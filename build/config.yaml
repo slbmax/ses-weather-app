@@ -1,0 +1,22 @@
+log:
+  level: debug
+  disable_sentry: true
+
+weather_api:
+  api_key: YOUR_API_KEY
+
+listener:
+  addr: :8090
+
+mailjet:
+  api_key: YOUR_API_KEY
+  secret_key: YOUR_API_KEY
+  from_email: YOUR_EMAIL
+
+serve_static:
+  enabled: true
+  addr: :8080
+  base_api_url: "http://localhost:8090/api"
+
+db:
+  url: postgresql://weatherapp:weatherapp@postgres:5432/weatherapp?sslmode=disable

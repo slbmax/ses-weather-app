@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Subscription Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 600px;
+            margin: auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Hello! This is your weather notifier!</h1>
+    <p>Thank you for subscribing to our {{.Frequency}} notifications for <strong>{{.City}}</strong>.</p>
+    <p>Use the token below to confirm your subscription:</p>
+    <p>Confirmation token: {{.Token}}</p>
+    <p class="footer">If you didn't request this, please ignore this email.</p>
+</div>
+</body>
+</html>
